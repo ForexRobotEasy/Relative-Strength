@@ -1,0 +1,94 @@
+
+//+------------------------------------------------------------------+
+//|                                                   Relative Strength |
+//|                                  Copyright © 2021 Forex Robot Easy Team |
+//|                                        https://www.forexroboteasy.com |
+//+------------------------------------------------------------------+
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+#include <Indicators\Indicators.mqh>
+
+// Define constants
+#define SYMBOL 'EURUSD'
+#define PERIOD_PERIOD_CURRENT 0
+#define PERIOD_M5 5
+#define RSI_PERIOD 14
+#define RSI_OVERBOUGHT_LEVEL 70
+#define RSI_OVERSOLD_LEVEL 30
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Print expert name and version
+    Print('Expert: Relative Strength');
+    Print('Version: 1.0');
+
+    // Set necessary indicator parameters
+    IndicatorSetInteger(INDICATOR_DIGITS, 5);
+    IndicatorSetString(INDICATOR_SHORTNAME, 'RSI');
+
+    // Subscribe to necessary symbol and timeframe
+    SymbolSelect(SYMBOL, true);
+    PeriodSelect(PERIOD_M5);
+
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+    // Unsubscribe from symbol
+    SymbolSelect(SYMBOL, false);
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Calculate RSI based on average gains
+    double rsi = iRSI(SYMBOL, PERIOD_PERIOD_CURRENT, RSI_PERIOD, PRICE_CLOSE, MODE_PLUSDI);
+
+    // Check if RSI is overbought or oversold
+    if (rsi > RSI_OVERBOUGHT_LEVEL)
+    {
+        // Execute sell trade
+        Sell();
+    }
+    else if (rsi < RSI_OVERSOLD_LEVEL)
+    {
+        // Execute buy trade
+        Buy();
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Execute buy trade                                                |
+//+------------------------------------------------------------------+
+void Buy()
+{
+    double lotSize = 0.01; // Set lot size
+    double stopLoss = 50; // Set stop loss in pips
+    double takeProfit = 100; // Set take profit in pips
+
+    // Open buy trade
+    OrderSend(SYMBOL, OP_BUY, lotSize, Ask, 0, Ask - stopLoss * _Point, Ask + takeProfit * _Point);
+}
+
+//+------------------------------------------------------------------+
+//| Execute sell trade                                               |
+//+------------------------------------------------------------------+
+void Sell()
+{
+    double lotSize = 0.01; // Set lot size
+    double stopLoss = 50; // Set stop loss in pips
+    double takeProfit = 100; // Set take profit in pips
+
+    // Open sell trade
+    OrderSend(SYMBOL, OP_SELL, lotSize, Bid, 0, Bid + stopLoss * _Point, Bid - takeProfit * _Point);
+}
